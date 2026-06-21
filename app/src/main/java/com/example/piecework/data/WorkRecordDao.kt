@@ -72,7 +72,7 @@ interface WorkRecordDao {
         FROM work_records r
         LEFT JOIN products p ON p.id = r.productId
         WHERE r.dateEpochDay = :dateEpochDay
-        ORDER BY r.createdAtMillis DESC
+        ORDER BY r.dateEpochDay DESC, r.id DESC
     """)
     fun observeRecordsByDate(dateEpochDay: Long): Flow<List<WorkRecordItem>>
 
@@ -93,7 +93,7 @@ interface WorkRecordDao {
         LEFT JOIN products p ON p.id = r.productId
         WHERE r.dateEpochDay >= :startEpochDay
           AND r.dateEpochDay < :endEpochDay
-        ORDER BY r.dateEpochDay DESC, r.createdAtMillis DESC
+        ORDER BY r.dateEpochDay DESC, r.id DESC
     """)
     fun observeRecordsBetween(
         startEpochDay: Long,
