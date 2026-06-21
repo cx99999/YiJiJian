@@ -161,10 +161,7 @@ fun HomeScreen(
                             uiState = uiState,
                             onPreviousMonth = onPreviousMonth,
                             onNextMonth = onNextMonth,
-                            onExportData = onExportData,
-                            onProductClick = { productId ->
-                                uiState.monthRecords.firstOrNull { it.productId == productId }?.let { editingRecord = it }
-                            }
+                            onExportData = onExportData
                         )
                     }
                 }
@@ -402,8 +399,7 @@ private fun OverviewPage(
     uiState: HomeUiState,
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
-    onExportData: () -> Unit,
-    onProductClick: (Long) -> Unit
+    onExportData: () -> Unit
 ) {
     val productStats = remember(uiState.monthRecords) {
         buildProductStats(uiState.monthRecords)
@@ -426,10 +422,7 @@ private fun OverviewPage(
 
         OverviewSummaryCard(summary = uiState.monthSummary)
 
-        ProductStatsCard(
-            items = productStats,
-            onProductClick = onProductClick
-        )
+        ProductStatsCard(items = productStats)
     }
 }
 
@@ -575,8 +568,7 @@ private fun OverviewMetric(
 
 @Composable
 private fun ProductStatsCard(
-    items: List<ProductStatItem>,
-    onProductClick: (Long) -> Unit
+    items: List<ProductStatItem>
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -601,7 +593,7 @@ private fun ProductStatsCard(
                 )
             } else {
                 items.forEachIndexed { index, item ->
-                    ProductStatRow(item = item, onClick = { onProductClick(item.productId) })
+                    ProductStatRow(item = item)
                     if (index < items.lastIndex) {
                         HorizontalDivider(color = Color(0xFFF0F0F0))
                     }
@@ -613,13 +605,11 @@ private fun ProductStatsCard(
 
 @Composable
 private fun ProductStatRow(
-    item: ProductStatItem,
-    onClick: () -> Unit
+    item: ProductStatItem
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
             .height(66.dp)
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -661,13 +651,6 @@ private fun ProductStatRow(
                 maxLines = 1
             )
         }
-
-        Icon(
-            imageVector = Icons.Default.KeyboardArrowRight,
-            contentDescription = null,
-            tint = Color(0xFF999999),
-            modifier = Modifier.size(18.dp)
-        )
     }
 }
 
@@ -970,6 +953,9 @@ private fun MonthRecordListView(
         monthRecords.groupBy { it.dateEpochDay }
             .toList()
             .sortedByDescending { it.first }
+            .map { (epochDay, records) ->
+                epochDay to records.sortedByDescending { it.recordId }
+            }
     }
 
     if (groups.isEmpty()) {
